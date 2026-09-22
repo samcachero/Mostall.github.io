@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mostall — Business Dashboard</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Playfair+Display:wght@600;700;800&display=swap');
+:root{--bg:#202123;--bg2:#292a2b;--ink:#f3f1ea;--muted:#b9b8b2;--line:#4a4b4c;--cyan:#2ed6df;--green:#55e7a5;--gold:#e8c84b;--red:#ef6d62}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:#111;color:var(--ink);font-family:"DM Mono",ui-monospace,monospace}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.12;background-image:repeating-linear-gradient(0deg,transparent 0 3px,#fff 4px),radial-gradient(circle at 20% 20%,#fff 0,transparent 25%);mix-blend-mode:overlay}
+.app{width:min(100%,1120px);margin:auto;background:linear-gradient(#222324,#28292a);border-left:1px solid #3e3f40;border-right:1px solid #3e3f40;min-height:100vh;padding:14px 18px 70px}
+.top{position:sticky;top:8px;z-index:20;display:flex;align-items:center;justify-content:space-between;padding:13px 16px;margin-bottom:44px;border:1px solid #555;border-radius:20px;background:#202122ee;box-shadow:0 12px 30px #0007;backdrop-filter:blur(12px)}
+.brand{font-family:"Playfair Display",serif;font-size:29px;letter-spacing:-1.5px}.brand span{color:#d8d6cf}.brand:after{content:"";display:inline-block;width:7px;height:7px;margin:0 0 15px 7px;border-radius:50%;background:var(--cyan);box-shadow:0 0 14px var(--cyan)}
+.top>div:last-child{display:flex;gap:8px}button{font:inherit;border:1px solid #555;border-radius:999px;padding:10px 14px;background:#292a2b;color:var(--ink);cursor:pointer;transition:.22s ease}button:hover{transform:translateY(-2px);background:#353637}.primary{background:#f2efe6;color:#1b1c1d;border-color:#f2efe6;font-weight:700}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.card{background:linear-gradient(145deg,#303132,#272829);border:1px solid #505152;border-radius:18px;padding:18px;box-shadow:inset 0 1px #ffffff12,0 14px 35px #0004}
+.stat{min-height:125px}.stat .label{color:#aaa9a3;font-size:11px;text-transform:uppercase;letter-spacing:1.5px}.stat .value{font-family:"Playfair Display",serif;font-size:30px;margin-top:9px}.up{color:var(--green)}.down{color:var(--red)}
+.main{display:grid;grid-template-columns:1.35fr .9fr;gap:12px;margin-top:12px}.wide{min-height:355px}.section-title{font-family:"Playfair Display",serif;font-size:22px;display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}.tabs{display:flex;gap:7px;overflow:auto;margin-bottom:14px}.tab{padding:8px 13px;white-space:nowrap}.tab.active{background:#414243;border-color:#68696a;box-shadow:inset 0 0 0 1px #777}
+.chart{height:235px;display:flex;align-items:end;gap:9px;padding:12px 5px 5px;border-bottom:1px solid #4b4c4d}.bar{flex:1;background:linear-gradient(#44d9df,#21858c);border:1px solid #62e9ef55;border-radius:8px 8px 2px 2px;min-height:14px;position:relative;box-shadow:0 0 16px #20dbe822;animation:grow .7s cubic-bezier(.2,.8,.2,1)}.bar small{position:absolute;bottom:-23px;left:50%;transform:translateX(-50%);color:#999;font-size:10px}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}.action{background:#292a2b;border-color:#4d4e4f;border-radius:15px;text-align:left;padding:13px}.action b{display:block;color:#f2f0e9;margin-bottom:5px}.action small{color:#aaa;line-height:1.4}.action:hover{box-shadow:0 10px 25px #0006;border-color:#777}
+.meter{height:8px;background:#171819;border:1px solid #454647;border-radius:9px;overflow:hidden;margin-top:7px}.meter i{display:block;height:100%;background:linear-gradient(90deg,var(--cyan),var(--green));transition:width .6s cubic-bezier(.2,.8,.2,1)}
+.bottom{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}.mini{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #414243}.log{display:flex;flex-direction:column;gap:8px;max-height:270px;overflow:auto}.event{padding:12px;border-radius:13px;background:#242526;border:1px solid #414243}.event span{color:#888;font-size:10px}
+.toast{position:fixed;right:18px;bottom:18px;background:#f0eee6;color:#171819;border-radius:999px;padding:12px 17px;display:none;box-shadow:0 12px 30px #0008;font-weight:700}
+.hero{max-width:850px;margin:0 auto 38px;text-align:center;padding:12px 10px 5px}.hero .eyebrow{display:inline-block;border:1px solid #555;border-radius:999px;padding:8px 14px;color:#ccc;font-size:12px;margin-bottom:22px}.hero h1{font-family:"Playfair Display",serif;font-size:clamp(48px,8vw,86px);line-height:.92;letter-spacing:-4px;margin:0 0 25px}.hero p{max-width:700px;margin:auto;color:#c2c1bb;font-size:16px;line-height:1.7}.hero .hero-actions{margin-top:25px;display:flex;justify-content:center;gap:9px}.hero .hero-actions button{padding:13px 21px}
+@keyframes grow{from{transform:scaleY(.04);transform-origin:bottom;opacity:.2}to{transform:scaleY(1);transform-origin:bottom;opacity:1}}
+@keyframes up{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}.hero{animation:up .65s both}.card{animation:up .55s both}
+@media(max-width:800px){.app{padding:10px 14px 60px}.top{margin-bottom:34px}.grid{grid-template-columns:1fr 1fr}.main,.bottom{grid-template-columns:1fr}.hero h1{letter-spacing:-2.5px}.hero p{font-size:14px}.hero .hero-actions{flex-wrap:wrap}}
+@media(max-width:520px){.top{padding:11px 12px}.brand{font-size:25px}.top>div:last-child button:not(.primary){display:none}.grid{gap:8px}.card{padding:15px}.stat .value{font-size:24px}.actions{grid-template-columns:1fr 1fr}.section-title{font-size:20px}}
+
+/* Premium motion system */
+html{scroll-behavior:smooth}
+body{overflow-x:hidden}
+body:after{content:"";position:fixed;inset:-20%;pointer-events:none;background:radial-gradient(circle at 50% 15%,#32dbe622,transparent 24%),radial-gradient(circle at 80% 70%,#55e7a511,transparent 22%);animation:ambient 12s ease-in-out infinite alternate;z-index:-1}
+.top{transition:transform .45s cubic-bezier(.2,.8,.2,1),background .35s ease}
+.top.scrolled{transform:translateY(-3px) scale(.985);background:#191a1bef}
+.hero{min-height:62vh;display:flex;flex-direction:column;justify-content:center}
+.hero h1{animation:heroIn 1s cubic-bezier(.16,1,.3,1) both}
+.hero p{animation:heroIn .9s .12s cubic-bezier(.16,1,.3,1) both}
+.hero-actions{animation:heroIn .9s .22s cubic-bezier(.16,1,.3,1) both}
+.eyebrow{animation:floatBadge 4s ease-in-out infinite}
+.card{will-change:transform;transition:transform .45s cubic-bezier(.2,.8,.2,1),border-color .3s,box-shadow .45s}
+.card:hover{transform:translateY(-5px);border-color:#6a6b6c;box-shadow:0 24px 55px #0007}
+.stat .value{transition:transform .3s;color:#f8f6ef}
+.stat:hover .value{transform:scale(1.045)}
+.bar{transition:height .8s cubic-bezier(.16,1,.3,1),filter .25s}
+.bar:hover{filter:brightness(1.35);box-shadow:0 0 28px #31e0e855}
+.action{position:relative;overflow:hidden}
+.action:after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 35%,#fff1 48%,transparent 61%);transform:translateX(-120%);transition:transform .6s}
+.action:hover:after{transform:translateX(120%)}
+.primary{position:relative;overflow:hidden}
+.primary:before{content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent,#ffffff99,transparent);transform:translateX(-120%);animation:sweep 3.8s infinite}
+.live-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 0 0 #55e7a566;animation:live 1.8s infinite}
+.progress-ring{position:relative;height:8px}
+.reveal{opacity:0;transform:translateY(35px);transition:opacity .8s cubic-bezier(.16,1,.3,1),transform .8s cubic-bezier(.16,1,.3,1)}
+.reveal.visible{opacity:1;transform:none}
+@keyframes ambient{from{transform:translate3d(-2%,0,0) scale(1)}to{transform:translate3d(2%,2%,0) scale(1.08)}}
+@keyframes heroIn{from{opacity:0;transform:translateY(34px) scale(.97);filter:blur(7px)}to{opacity:1;transform:none;filter:none}}
+@keyframes floatBadge{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@keyframes sweep{0%,65%{transform:translateX(-120%)}80%,100%{transform:translateX(120%)}}
+@keyframes live{70%{box-shadow:0 0 0 8px #55e7a500}100%{box-shadow:0 0 0 0 #55e7a500}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+
+.social-wrap{margin-top:12px;display:grid;grid-template-columns:1.15fr .85fr;gap:12px}
+.social-posts{display:flex;flex-direction:column;gap:9px;max-height:410px;overflow:auto}
+.social-post{background:#242526;border:1px solid #444;border-radius:16px;padding:14px;animation:up .45s both}
+.social-head{display:flex;align-items:center;gap:10px}
+.avatar{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:linear-gradient(135deg,#39d7df,#254a4c);font-weight:800;color:#fff}
+.handle{font-weight:700}.verified{color:var(--cyan);font-size:12px}.post-time{color:#777;font-size:10px;margin-left:auto}
+.social-text{margin:12px 0;color:#ddd;line-height:1.55;font-family:system-ui,sans-serif}
+.social-actions{display:flex;gap:16px;color:#aaa;font-size:12px}.social-actions button{border:0;background:transparent;padding:2px 0;color:#aaa;font-size:12px}
+.social-actions button:hover{color:#fff;box-shadow:none;transform:none}
+.social-side{display:flex;flex-direction:column;gap:9px}.trend{padding:13px;border:1px solid #444;border-radius:15px;background:#242526}
+.trend small{color:#777}.trend b{display:block;margin:4px 0}
+.social-compose{display:flex;gap:8px;margin-top:10px}.social-compose input{flex:1;background:#191a1b;border:1px solid #494a4b;border-radius:999px;color:#fff;padding:11px 14px;font:inherit;outline:none}.social-compose input:focus{border-color:var(--cyan)}
+.social-compose button{background:#f0eee6;color:#171819;border-color:#f0eee6}
+@media(max-width:800px){.social-wrap{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <div><div class="brand">Most<span>all</span></div><div style="color:var(--muted)">Company operations</div></div>
+    <div><button id="next" class="primary">Next Month →</button> <button id="reset">Reset</button></div>
+  </div>
+
+  <section class="hero">
+    <div class="eyebrow">MOSTALL • COMPANY OPERATIONS</div>
+    <h1>Build the company<br>you imagine.</h1>
+    <p>See what is happening across Mostall at a glance. Make decisions, watch the numbers move, and turn a small operation into something much bigger.</p>
+    <div class="hero-actions"><button class="primary" onclick="document.querySelector('.main').scrollIntoView({behavior:'smooth'})">Open dashboard</button><button onclick="document.querySelector('.bottom').scrollIntoView({behavior:'smooth'})">View activity</button></div>
+  </section>
+
+  <div style="display:flex;justify-content:center;margin:-18px auto 25px;color:#aaa;font-size:11px;gap:18px;align-items:center">
+    <span><i class="live-dot"></i> LIVE COMPANY DATA</span>
+    <span id="clock">12:04:00 AM</span>
+    <span>•</span>
+    <span>Quarterly plan active</span>
+  </div>
+  <div class="grid">
+    <div class="card stat"><div class="label">CASH</div><div class="value" id="cash">$125,000</div><div class="up">+$18,400 this month</div></div>
+    <div class="card stat"><div class="label">REVENUE</div><div class="value" id="rev">$42,800</div><div class="up">+8.6%</div></div>
+    <div class="card stat"><div class="label">CUSTOMERS</div><div class="value" id="customers">842</div><div class="up">+74</div></div>
+    <div class="card stat"><div class="label">REPUTATION</div><div class="value" id="rep">74/100</div><div class="up">Strong</div></div>
+  </div>
+
+  <div class="main reveal">
+    <div class="card wide">
+      <div class="section-title">Business performance <span id="month" style="color:var(--muted)">Month 1</span></div>
+      <div class="tabs"><button class="tab active" data-mode="revenue">Revenue</button><button class="tab" data-mode="profit">Profit</button><button class="tab" data-mode="customers">Customers</button></div>
+      <div class="chart" id="chart"></div>
+    </div>
+    <div class="card">
+      <div class="section-title">Make a decision</div>
+      <div class="actions">
+        <button class="action" onclick="act('marketing')"><b>📣 Marketing Push</b><small>Spend $5k • Gain customers</small></button>
+        <button class="action" onclick="act('hire')"><b>👥 Hire Staff</b><small>Spend $8k • Boost capacity</small></button>
+        <button class="action" onclick="act('price')"><b>💰 Raise Prices</b><small>Increase margin • Risk churn</small></button>
+        <button class="action" onclick="act('product')"><b>🧪 New Product</b><small>Spend $12k • Long-term upside</small></button>
+      </div>
+      <div style="margin-top:18px;color:var(--muted)">Employee morale</div><div class="meter"><i id="morale" style="width:78%"></i></div>
+      <div style="margin-top:12px;color:var(--muted)">Market share</div><div class="meter"><i id="share" style="width:21%"></i></div>
+    </div>
+  </div>
+
+  <section class="social-wrap reveal">
+    <div class="card">
+      <div class="section-title">
+        <span>Mostall Social</span>
+        <span style="font:11px 'DM Mono';color:#999"><i class="live-dot"></i> LIVE</span>
+      </div>
+      <div class="social-posts" id="socialPosts">
+        <article class="social-post">
+          <div class="social-head"><div class="avatar">M</div><div><div class="handle">Mostall <span class="verified">✓</span></div><span style="color:#888;font-size:10px">@mostall</span></div><span class="post-time">8m</span></div>
+          <div class="social-text">Big week for the team. We're opening a new market and investing in faster delivery.</div>
+          <div class="social-actions"><button onclick="socialLike(this)">♡ 1.8K</button><button>↻ 214</button><button>↗ Share</button></div>
+        </article>
+        <article class="social-post">
+          <div class="social-head"><div class="avatar" style="background:linear-gradient(135deg,#d95cff,#452d55)">A</div><div><div class="handle">Alex Chen <span class="verified">✓</span></div><span style="color:#888;font-size:10px">@alexchen</span></div><span class="post-time">22m</span></div>
+          <div class="social-text">The new Mostall dashboard is seriously smooth. Watching the numbers change in real time is wild.</div>
+          <div class="social-actions"><button onclick="socialLike(this)">♡ 643</button><button>↻ 71</button><button>↗ Share</button></div>
+        </article>
+        <article class="social-post">
+          <div class="social-head"><div class="avatar" style="background:linear-gradient(135deg,#e7b84c,#59471d)">J</div><div><div class="handle">Jordan • Market Watch</div><span style="color:#888;font-size:10px">@jordanmarkets</span></div><span class="post-time">1h</span></div>
+          <div class="social-text">Mostall is showing strong customer growth this quarter. Curious to see what their next move is.</div>
+          <div class="social-actions"><button onclick="socialLike(this)">♡ 391</button><button>↻ 48</button><button>↗ Share</button></div>
+        </article>
+      </div>
+      <div class="social-compose"><input id="socialInput" placeholder="Post an update as Mostall…"><button onclick="publishPost()">Post</button></div>
+    </div>
+
+    <div class="card social-side">
+      <div class="section-title">Trending now</div>
+      <div class="trend"><small>1 • BUSINESS</small><b>#MostallLaunch</b><span style="color:#999">12.4K posts</span></div>
+      <div class="trend"><small>2 • MARKETS</small><b>#GrowthSeason</b><span style="color:#999">8.7K posts</span></div>
+      <div class="trend"><small>3 • TECH</small><b>#BuildInPublic</b><span style="color:#999">5.2K posts</span></div>
+      <div class="trend"><small>4 • MOSTALL</small><b>#MostallMoves</b><span style="color:#999">3.9K posts</span></div>
+      <div style="margin-top:auto;padding:12px 0 0;color:#777;font-size:11px">Simulated public feed • All posts are fictional</div>
+    </div>
+  </section>
+
+  <div class="bottom reveal">
+    <div class="card"><div class="section-title">Company at a glance</div>
+      <div class="mini"><span>Monthly expenses</span><b id="expenses">$24,400</b></div>
+      <div class="mini"><span>Net profit</span><b class="up" id="profit">$18,400</b></div>
+      <div class="mini"><span>Employees</span><b id="employees">18</b></div>
+      <div class="mini"><span>Company value</span><b id="value">$690,000</b></div>
+    </div>
+    <div class="card"><div class="section-title">Recent activity <span style="color:var(--muted)">Live</span></div><div class="log" id="log"></div></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+const initial={cash:125000,rev:42800,customers:842,rep:74,expenses:24400,profit:18400,employees:18,value:690000,morale:78,share:21,month:1};
+let s={...initial}, mode='revenue';
+let data={revenue:[28,31,29,36,34,39,42,43],profit:[9,11,10,14,13,16,17,18],customers:[510,565,602,648,701,735,768,842]};
+const logEl=document.getElementById('log');
+function money(n){return '$'+Math.round(n).toLocaleString()}
+function render(){
+ cash.textContent=money(s.cash);rev.textContent=money(s.rev);customers.textContent=s.customers.toLocaleString();rep.textContent=s.rep+'/100';
+ expenses.textContent=money(s.expenses);profit.textContent=money(s.profit);employees.textContent=s.employees;value.textContent=money(s.value);
+ morale.style.width=s.morale+'%';share.style.width=s.share+'%';month.textContent='Month '+s.month;
+ chart.innerHTML='';
+ let arr=data[mode]; arr=arr.slice(-8); let max=Math.max(...arr);
+ arr.forEach((v,i)=>{let b=document.createElement('div');b.className='bar';b.style.height=(35+v/max*60)+'%';b.innerHTML='<small>'+(['J','F','M','A','M','J','J','A'][i]||i+1)+'</small>';chart.appendChild(b)})
+}
+function addLog(text){let d=document.createElement('div');d.className='event';d.innerHTML=text+'<br><span>Month '+s.month+'</span>';logEl.prepend(d);while(logEl.children.length>7)logEl.lastChild.remove()}
+function toast(t){let x=document.getElementById('toast');x.textContent=t;x.style.display='block';setTimeout(()=>x.style.display='none',1800)}
+function act(type){
+ if(type==='marketing'){if(s.cash<5000)return toast('Not enough cash');s.cash-=5000;s.customers+=95;s.rev+=4200;s.share+=1;addLog('📣 Marketing campaign brought in 95 customers.')}
+ if(type==='hire'){if(s.cash<8000)return toast('Not enough cash');s.cash-=8000;s.employees+=3;s.morale=Math.min(100,s.morale+6);s.expenses+=1800;addLog('👥 Three employees joined the team.')}
+ if(type==='price'){s.rev*=1.07;s.customers=Math.max(1,Math.round(s.customers*.97));s.profit+=2300;s.rep=Math.max(0,s.rep-2);addLog('💰 Prices increased. Revenue rose, but some customers left.')}
+ if(type==='product'){if(s.cash<12000)return toast('Not enough cash');s.cash-=12000;s.rev+=7000;s.value+=45000;s.rep+=3;addLog('🧪 New product launched successfully.')}
+ s.value=Math.max(0,s.value);render();toast('Decision applied');
+}
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');mode=b.dataset.mode;render()});
+next.onclick=()=>{
+ s.month++;let growth=1+(Math.random()*.12-.03);s.rev=Math.round(s.rev*growth);s.expenses=Math.round(s.expenses*(.99+Math.random()*.05));s.profit=s.rev-s.expenses;s.cash+=s.profit;s.customers=Math.round(s.customers*(.98+Math.random()*.08));s.value=Math.round(s.value*(1+(s.profit>0?.025:-.02)));s.rep=Math.max(0,Math.min(100,s.rep+(Math.random()>.45?1:-1)));
+ data.revenue.push(s.rev/1000);data.profit.push(s.profit/1000);data.customers.push(s.customers);addLog(s.profit>=0?'📈 Business grew this month.':'📉 Tough month — expenses beat revenue.');render()
+};
+reset.onclick=()=>{s={...initial};logEl.innerHTML='';addLog('🏢 Company founded. You are the CEO.');render()};
+addLog('🏢 Company founded. You are the CEO.');render();
+
+const topBar=document.querySelector('.top');
+const reveals=document.querySelectorAll('.reveal');
+const io=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible')}),{threshold:.12});
+reveals.forEach(x=>io.observe(x));
+
+window.addEventListener('scroll',()=>topBar.classList.toggle('scrolled',scrollY>40),{passive:true});
+
+const clockEl=document.getElementById('clock');
+function liveClock(){
+  const d=new Date(), h=d.getHours(), m=String(d.getMinutes()).padStart(2,'0'), sec=String(d.getSeconds()).padStart(2,'0');
+  clockEl.textContent=((h%12)||12)+':'+m+':'+sec+' '+(h>=12?'PM':'AM');
+}
+setInterval(liveClock,1000); liveClock();
+
+document.querySelectorAll('.card').forEach(card=>{
+  card.addEventListener('pointermove',e=>{
+    if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+    const r=card.getBoundingClientRect(), x=(e.clientX-r.left)/r.width-.5, y=(e.clientY-r.top)/r.height-.5;
+    card.style.transform=`perspective(900px) rotateX(${y*-2.2}deg) rotateY(${x*2.2}deg) translateY(-5px)`;
+  });
+  card.addEventListener('pointerleave',()=>card.style.transform='');
+});
+
+const originalAddLog=addLog;
+addLog=function(text){ originalAddLog(text); const first=logEl.firstElementChild; if(first){first.animate([{opacity:0,transform:'translateX(25px)'},{opacity:1,transform:'none'}],{duration:450,easing:'cubic-bezier(.16,1,.3,1)'});} };
+
+function simulateNews(){
+  if(Math.random()<.48){
+    const items=[
+      '🟢 Customer demand is trending upward across core products.',
+      '📦 Operations cleared a new fulfillment milestone.',
+      '📣 Brand visibility increased in the latest market snapshot.',
+      '💡 Leadership review recommends testing a new growth channel.',
+      '🤝 A new business relationship entered the pipeline.'
+    ];
+    addLog(items[Math.floor(Math.random()*items.length)]);
+  }
+}
+setInterval(simulateNews,7000);
+
+function socialLike(btn){
+  const m=btn.textContent.match(/(\d[\d.]*)/);
+  if(!m)return;
+  let n=parseFloat(m[1].replace(',',''))+1;
+  btn.textContent='♥ '+(n>=1000?(n/1000).toFixed(1)+'K':Math.round(n));
+  btn.style.color='var(--red)';
+  btn.animate([{transform:'scale(1.25)'},{transform:'scale(1)'}],{duration:220});
+}
+function publishPost(){
+  const input=document.getElementById('socialInput'), text=input.value.trim();
+  if(!text){toast('Write something first');return}
+  const post=document.createElement('article');
+  post.className='social-post';
+  post.innerHTML=`<div class="social-head"><div class="avatar">M</div><div><div class="handle">Mostall <span class="verified">✓</span></div><span style="color:#888;font-size:10px">@mostall</span></div><span class="post-time">now</span></div>
+  <div class="social-text"></div><div class="social-actions"><button onclick="socialLike(this)">♡ 0</button><button>↻ 0</button><button>↗ Share</button></div>`;
+  post.querySelector('.social-text').textContent=text;
+  document.getElementById('socialPosts').prepend(post);
+  input.value=''; toast('Posted to Mostall Social');
+}
+</script>
+</body>
+</html>
